@@ -1,0 +1,4 @@
+language = Objective-C
+headers = PushPortBridge.h
+headerFilter = PushPortBridge.h
+package = dev.pushport.kmp.bridge

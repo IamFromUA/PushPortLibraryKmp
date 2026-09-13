@@ -1,0 +1,62 @@
+name: Verify KMP SDK
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: bash gradlew jvmTest jsNodeTest
+  apple-interop:
+    runs-on: macos-15
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: android-actions/setup-android@v4
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      # Bootstrap before the first Maven Central publication. The explicit repository is CI-only.
+      - uses: actions/checkout@v4
+        with:
+          repository: IamFromUA/PushPortLibraryAndroid
+          ref: 1e80adcc14fbc0e75446f2b0582e3b4731e5f7fb # Android SDK 0.0.1 candidate
+          path: .native-android
+          persist-credentials: false
+      - run: bash .native-android/gradlew -p .native-android publishReleasePublicationToLocalReleaseRepository
+      - name: Build every Maven target and verify Android adapter
+        run: bash gradlew compileAndroidMain testAndroidHostTest publishAllPublicationsToLocalReleaseRepository "-Ppushport.androidRepository=$PWD/.native-android/build/maven-repository"
+      - name: Link independent Kotlin and Swift consumer
+        run: bash scripts/verify-apple-consumer.sh "$PWD/build/maven-repository"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kmp-maven-repository
+          path: build/maven-repository
+  verify:
+    if: always()
+    needs: [portable, apple-interop]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          PORTABLE: ${{ needs.portable.result }}
+          APPLE: ${{ needs.apple-interop.result }}
+        run: test "$PORTABLE" = success && test "$APPLE" = success
