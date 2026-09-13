@@ -1,6 +1,6 @@
 # PushPort Kotlin Multiplatform SDK
 
-Shared Kotlin API over the native PushPort Android, Apple and Web SDKs. **Version 0.0.1; Maven Central publication pending.** This package delegates token registration, persistence, permissions and delivery to the platform SDK. It creates no extra installation, HTTP client or competing notification handler.
+Shared Kotlin API over the native PushPort Android, Apple and Web SDKs. **Version 0.0.1 is published on Maven Central.** This package delegates token registration, persistence, permissions and delivery to the platform SDK. It creates no extra installation, HTTP client or competing notification handler.
 
 | Target | Adapter | Requirements |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ Kotlin/Wasm and desktop notification providers are not implemented.
 
 ## Dependency
 
-After the Maven Central release is available, add `mavenCentral()` and `google()` to your repositories and the dependency to the shared module:
+Add `mavenCentral()` and `google()` to your repositories and the dependency to the shared module:
 
 ```kotlin
 commonMain.dependencies {
@@ -87,7 +87,7 @@ Use the checked-in wrapper, JDK 17, Node.js 24 and Android SDK 36. Portable veri
 ./gradlew jvmTest jsNodeTest
 ```
 
-Until Android is public in Maven Central, native adapter verification can use an **explicit** local Maven repository:
+For unreleased Android changes, native adapter verification can use an **explicit** local Maven repository:
 
 ```text
 ./gradlew compileAndroidMain testAndroidHostTest -Ppushport.androidRepository=/absolute/path/to/android-sdk/build/maven-repository

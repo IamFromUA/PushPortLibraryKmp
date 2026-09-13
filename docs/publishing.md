@@ -1,6 +1,6 @@
 # Publishing to Maven Central
 
-Repository: https://github.com/IamFromUA/PushPortLibraryKmp. Coordinate: `dev.pushport:kmp-sdk:0.0.1`. Publish after the native Android artifact is public. The iOS host links [PushPort 0.0.1 through SPM](https://github.com/IamFromUA/PushPortLibraryApple); Kotlin/JS hosts install the compatible Web npm package.
+Repository: https://github.com/IamFromUA/PushPortLibraryKmp. Coordinate: `dev.pushport:kmp-sdk:0.0.1`. Version 0.0.1 and its native Android dependency are published on Maven Central. Publish future versions after their native Android dependency is public. The iOS host links [PushPort 0.0.1 through SPM](https://github.com/IamFromUA/PushPortLibraryApple); Kotlin/JS hosts install the compatible Web npm package.
 
 ## Complete release verification
 
@@ -25,3 +25,7 @@ Create an immutable Git tag matching `version` in build.gradle.kts. Run **Publis
 After publication, verify an independent consumer using only `google()` and `mavenCentral()`. Fixes require a new version; never overwrite `0.0.1`.
 
 References: [Kotlin Maven publication](https://kotlinlang.org/docs/multiplatform/multiplatform-publish-libraries-to-maven.html), [Central requirements](https://central.sonatype.org/publish/requirements/).
+
+## Publisher policy
+
+From 2026-10-01 Sonatype requires Publisher Pro for artifacts supporting commercial products or services. Review the [current policy](https://central.sonatype.org/news/20260908_publisher_tiers_commercial_use/) before future commercial PushPort releases; a public repository or open-source license alone does not determine eligibility.
