@@ -1,10 +1,10 @@
 # PushPort Kotlin Multiplatform SDK
 
-Shared Kotlin API over the native PushPort Android, Apple and Web SDKs. **Version 0.0.1 is published on Maven Central.** This package delegates token registration, persistence, permissions and delivery to the platform SDK. It creates no extra installation, HTTP client or competing notification handler.
+Shared Kotlin API over the native PushPort Android, Apple and Web SDKs. **Version 0.0.2 is published on Maven Central.** This package delegates token registration, persistence, permissions and delivery to the platform SDK. It creates no extra installation, HTTP client or competing notification handler.
 
 | Target | Adapter | Requirements |
 | --- | --- | --- |
-| Android | Native `dev.pushport:android-sdk:0.0.1` | Android API 23+, foreground Activity for permission prompts |
+| Android | Native `dev.pushport:android-sdk:0.0.2` | Android API 23+, foreground Activity for permission prompts |
 | iOS device / Apple Silicon and Intel simulator | Objective-C bridge implemented by PushPort Swift package | iOS 15+, macOS/Xcode to build, PushPort SPM product linked in the host |
 | Kotlin/JS browser | Native `@pushport/web-sdk` module | Secure browser context, same-origin service worker |
 | JVM | Common facade / custom driver and portable tests | No native JVM notification delivery |
@@ -17,7 +17,7 @@ Add `mavenCentral()` and `google()` to your repositories and the dependency to t
 
 ```kotlin
 commonMain.dependencies {
-    implementation("dev.pushport:kmp-sdk:0.0.1")
+    implementation("dev.pushport:kmp-sdk:0.0.2")
 }
 ```
 
@@ -77,7 +77,7 @@ external object NativeWebSdk
 val client = createWebPushPort(NativeWebSdk, serviceWorkerUrl = "/pushport-sw.js")
 ```
 
-Add `implementation(npm("@pushport/web-sdk", "0.0.1"))` to the host's `jsMain.dependencies` after npm publication and copy the native SDK worker into the site's public directory. SSR import is safe, but initialize the client only in a supported browser. Request permission from an actual user click.
+Add `implementation(npm("@pushport/web-sdk", "0.0.2"))` to the host's `jsMain.dependencies` after npm publication and copy the native SDK worker into the site's public directory. SSR import is safe, but initialize the client only in a supported browser. Request permission from an actual user click.
 
 ## Development and release
 
@@ -100,3 +100,5 @@ The Apple SDK is published/tested first; publish KMP after compatible Android/Ap
 Apache-2.0 В· Oleh Yurkov В· support@pushport.dev
 
 Source: [PushPortLibraryKmp](https://github.com/IamFromUA/PushPortLibraryKmp) · [Integration documentation](https://pushport.dev/en/docs/)
+
+See [diagnostics, consent, images and user profiles](docs/diagnostics.md) for version 0.0.2.

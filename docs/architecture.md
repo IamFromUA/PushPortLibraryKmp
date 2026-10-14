@@ -15,4 +15,4 @@ On Android the adapter directly invokes the released AAR. On Apple Cinterop call
 
 Keep provider-specific features in native APIs until the common abstraction can express them honestly. Current common API does not promise identical permission-prompt completion timing or native notification click callbacks. Apple hosts use the Swift callback; Android hosts use the native SDK/intent path; Web routes through its service worker.
 
-Version 0.0.1 compatibility: Android SDK 0.0.1, Apple bridge 0.0.1, Web SDK 0.0.1. Native binaries/platform bindings must be tested together for each KMP release. Source compatibility of Kotlin alone does not prove Swift link compatibility.
+Version 0.0.2 compatibility: Android SDK 0.0.2, Apple bridge 0.0.2, Web SDK 0.0.2. Native binaries/platform bindings must be tested together for each KMP release. Source compatibility of Kotlin alone does not prove Swift link compatibility.

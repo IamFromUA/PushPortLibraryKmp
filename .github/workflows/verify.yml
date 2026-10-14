@@ -35,16 +35,8 @@ jobs:
       - uses: android-actions/setup-android@v4
       - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v4
-      # Bootstrap before the first Maven Central publication. The explicit repository is CI-only.
-      - uses: actions/checkout@v4
-        with:
-          repository: IamFromUA/PushPortLibraryAndroid
-          ref: 1e80adcc14fbc0e75446f2b0582e3b4731e5f7fb # Android SDK 0.0.1 candidate
-          path: .native-android
-          persist-credentials: false
-      - run: bash .native-android/gradlew -p .native-android publishReleasePublicationToLocalReleaseRepository
       - name: Build every Maven target and verify Android adapter
-        run: bash gradlew compileAndroidMain testAndroidHostTest publishAllPublicationsToLocalReleaseRepository "-Ppushport.androidRepository=$PWD/.native-android/build/maven-repository"
+        run: bash gradlew compileAndroidMain testAndroidHostTest publishAllPublicationsToLocalReleaseRepository
       - name: Link independent Kotlin and Swift consumer
         run: bash scripts/verify-apple-consumer.sh "$PWD/build/maven-repository"
       - uses: actions/upload-artifact@v4

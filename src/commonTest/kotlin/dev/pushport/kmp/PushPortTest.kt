@@ -8,6 +8,18 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PushPortTest {
+    @Test fun tagsAndConsentReachOneNativeDriverWithValidatedIdentity() = runTest {
+        val driver = FakeDriver(); val sdk = PushPort(driver)
+        sdk.initialize(PushPortConfiguration(appId, consentRequired = true))
+        sdk.setConsentGiven(true)
+        sdk.setTags(mapOf("buyer" to "team1", "remove" to null))
+        assertEquals("tags", BridgeStatus.json.decodeFromString<UserOperation>(driver.operation!!).kind)
+        assertFailsWith<IllegalArgumentException> { sdk.login("victim", "invalid-proof") }
+        assertFailsWith<IllegalArgumentException> { sdk.setTags(mapOf("x".repeat(65) to "value")) }
+        sdk.login("account1", "a".repeat(43))
+        assertEquals("account1", BridgeStatus.json.decodeFromString<UserOperation>(driver.operation!!).externalId)
+        assertTrue(driver.consent)
+    }
     private val appId = "6d632180-a023-4101-a4b1-9068404346f8"
 
     @Test fun operationsRequireInitializationAndPreserveBinding() = runTest {
@@ -52,6 +64,10 @@ private class FakeDriver : PushPortDriver {
     private var state = PushPortStatus()
     var permissionRequests = 0
     var syncs = 0
+    var operation: String? = null
+    var consent = false
+    override suspend fun updateUserJSON(value: String) { operation = value }
+    override suspend fun setConsentGiven(value: Boolean) { consent = value }
     override suspend fun initialize(configuration: PushPortConfiguration) { state = state.copy(configured = true) }
     override fun status() = state
     override fun sync() { syncs++ }

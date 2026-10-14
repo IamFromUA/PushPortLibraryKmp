@@ -1,6 +1,6 @@
 # Publishing to Maven Central
 
-Repository: https://github.com/IamFromUA/PushPortLibraryKmp. Coordinate: `dev.pushport:kmp-sdk:0.0.1`. Version 0.0.1 and its native Android dependency are published on Maven Central. Publish future versions after their native Android dependency is public. The iOS host links [PushPort 0.0.1 through SPM](https://github.com/IamFromUA/PushPortLibraryApple); Kotlin/JS hosts install the compatible Web npm package.
+Repository: https://github.com/IamFromUA/PushPortLibraryKmp. Coordinate: `dev.pushport:kmp-sdk:0.0.2`. Version 0.0.2 and its native Android dependency are published on Maven Central. Publish future versions after their native Android dependency is public. The iOS host links [PushPort 0.0.2 through SPM](https://github.com/IamFromUA/PushPortLibraryApple); Kotlin/JS hosts install the compatible Web npm package.
 
 ## Complete release verification
 
@@ -22,7 +22,7 @@ The Central account must own the verified namespace `dev.pushport`. Generate its
 
 Create an immutable Git tag matching `version` in build.gradle.kts. Run **Publish Maven Central** manually with that tag. It verifies all target artifacts and final Swift linking, signs in memory, and uploads/releases via the Central Portal API. The private key is not stored in repository files or artifacts. Ordinary pushes do not publish. A successful upload may take time to appear in Maven mirrors.
 
-After publication, verify an independent consumer using only `google()` and `mavenCentral()`. Fixes require a new version; never overwrite `0.0.1`.
+After publication, verify an independent consumer using only `google()` and `mavenCentral()`. Fixes require a new version; never overwrite `0.0.2`.
 
 References: [Kotlin Maven publication](https://kotlinlang.org/docs/multiplatform/multiplatform-publish-libraries-to-maven.html), [Central requirements](https://central.sonatype.org/publish/requirements/).
 

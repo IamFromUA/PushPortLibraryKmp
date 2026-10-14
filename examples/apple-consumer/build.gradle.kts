@@ -8,6 +8,6 @@ kotlin {
         }
     }
     sourceSets.commonMain.dependencies {
-        implementation("dev.pushport:kmp-sdk:0.0.1")
+        implementation("dev.pushport:kmp-sdk:0.0.2")
     }
 }

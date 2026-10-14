@@ -1,3 +1,7 @@
+# Version 0.0.2 verification
+
+The release checks cover state upgrade without duplicate installations, bounded retry/acknowledgement diagnostics, consent, user operations, image policy and native integration. Apple/iOS and KMP/Swift linking must pass macOS CI before tagging/publishing. See the matching GitHub Actions run for the release commit. Portable Swift checks are not native iOS verification. Real provider delivery remains a separate integration check.
+
 # Release verification — 2026-09-13
 
 - JVM, Android host and Node.js common-behavior checks passed (3 tests per target).

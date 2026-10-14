@@ -18,6 +18,8 @@ private class WebDriver(private val module: dynamic, private val worker: String)
         options.appId = configuration.appId
         options.serverUrl = configuration.serverUrl
         options.serviceWorkerUrl = worker
+        configuration.consentRequired?.let { options.consentRequired = it }
+        configuration.consentGiven?.let { options.consentGiven = it }
         client = (module.PushPort.initialize(options) as Promise<dynamic>).await()
     }
     override fun status(): PushPortStatus {
@@ -35,4 +37,21 @@ private class WebDriver(private val module: dynamic, private val worker: String)
     override suspend fun setSubscribed(value: Boolean) { (client.setSubscribed(value) as Promise<dynamic>).await() }
     override suspend fun setLocale(languageTag: String?) { (client.setLocale(languageTag) as Promise<dynamic>).await() }
     override suspend fun requestPermission() { (client.requestPermission() as Promise<dynamic>).await() }
+    override fun userJSON(): String? { val user = client?.user(); return if (user == null) null else JSON.stringify(user) }
+    override suspend fun updateUserJSON(value: String) {
+        val op = JSON.parse<dynamic>(value)
+        val result = when (op.kind as String) {
+            "tags" -> client.setTags(op.tags)
+            "login" -> client.login(op.externalId, op.identityToken)
+            "logout" -> client.logout()
+            "email" -> client.setEmail(op.email)
+            "phone" -> client.setPhoneNumber(op.phoneNumber)
+            "location" -> client.setLocation(op.latitude, op.longitude)
+            "event" -> client.trackEvent(op.eventName, op.eventProperties)
+            else -> error("Invalid user operation")
+        }
+        (result as Promise<dynamic>).await()
+    }
+    override suspend fun setConsentRequired(value: Boolean) { (client.setConsentRequired(value) as Promise<dynamic>).await() }
+    override suspend fun setConsentGiven(value: Boolean) { (client.setConsentGiven(value) as Promise<dynamic>).await() }
 }

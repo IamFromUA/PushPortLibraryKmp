@@ -9,7 +9,7 @@ plugins {
     signing
 }
 group = "dev.pushport"
-version = "0.0.1"
+version = "0.0.2"
 
 // CI and local development use an explicitly installed Node runtime (see README).
 plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin> {
@@ -42,7 +42,7 @@ kotlin {
             implementation(kotlin("test"))
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
         }
-        androidMain.dependencies { implementation("dev.pushport:android-sdk:0.0.1") }
+        androidMain.dependencies { implementation("dev.pushport:android-sdk:0.0.5") }
     }
 }
 
