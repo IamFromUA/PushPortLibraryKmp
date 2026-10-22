@@ -1,6 +1,6 @@
 # Publishing to Maven Central
 
-Repository: https://github.com/IamFromUA/PushPortLibraryKmp. Coordinate: `dev.pushport:kmp-sdk:0.0.2`. Version 0.0.2 and its native Android dependency are published on Maven Central. Publish future versions after their native Android dependency is public. The iOS host links [PushPort 0.0.2 through SPM](https://github.com/IamFromUA/PushPortLibraryApple); Kotlin/JS hosts install the compatible Web npm package.
+Repository: https://github.com/IamFromUA/PushPortLibraryKmp. Coordinate: `dev.pushport:kmp-sdk:0.0.2`. Version 0.0.2 and its native Android dependency are published on Maven Central. Publish future versions after their native Android dependency is public. The iOS host links [PushPort 0.0.2 through SPM](https://github.com/IamFromUA/PushPortLibraryApple); Kotlin/JS hosts install the compatible Web package from its public GitHub archive while npm registry publication remains pending.
 
 ## Complete release verification
 

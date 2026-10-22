@@ -4,7 +4,7 @@ Shared Kotlin API over the native PushPort Android, Apple and Web SDKs. **Versio
 
 | Target | Adapter | Requirements |
 | --- | --- | --- |
-| Android | Native `dev.pushport:android-sdk:0.0.2` | Android API 23+, foreground Activity for permission prompts |
+| Android | Native `dev.pushport:android-sdk:0.0.5` | Android API 23+, foreground Activity for permission prompts |
 | iOS device / Apple Silicon and Intel simulator | Objective-C bridge implemented by PushPort Swift package | iOS 15+, macOS/Xcode to build, PushPort SPM product linked in the host |
 | Kotlin/JS browser | Native `@pushport/web-sdk` module | Secure browser context, same-origin service worker |
 | JVM | Common facade / custom driver and portable tests | No native JVM notification delivery |
@@ -77,7 +77,7 @@ external object NativeWebSdk
 val client = createWebPushPort(NativeWebSdk, serviceWorkerUrl = "/pushport-sw.js")
 ```
 
-Add `implementation(npm("@pushport/web-sdk", "0.0.2"))` to the host's `jsMain.dependencies` after npm publication and copy the native SDK worker into the site's public directory. SSR import is safe, but initialize the client only in a supported browser. Request permission from an actual user click.
+The Web SDK is currently distributed through its GitHub release archive, not the npm registry. For a Gradle-managed Kotlin/JS host, use `implementation(npm("@pushport/web-sdk", "https://github.com/IamFromUA/PushPortLibraryWeb/releases/download/0.0.2/pushport-web-sdk-0.0.2.tgz"))` in `jsMain.dependencies`, or install that archive in the host JavaScript project. Copy `dist/pushport-sw.js` from the dependency into the site's public directory. After npm registry publication, the dependency may use version `0.0.2` directly. SSR import is safe, but initialize the client only in a supported browser. Request permission from an actual user click.
 
 ## Development and release
 
@@ -95,10 +95,10 @@ For unreleased Android changes, native adapter verification can use an **explici
 
 There is no hardcoded dependency on sibling directories. For iOS run `compileKotlinIosArm64 compileKotlinIosSimulatorArm64 compileKotlinIosX64` on macOS, then run `bash scripts/verify-apple-consumer.sh "$PWD/build/maven-repository"` after local publication to link an independent KMP application with the public Swift package. [Architecture/API](docs/architecture.md), [publishing](docs/publishing.md), [security](SECURITY.md).
 
-The Apple SDK is published/tested first; publish KMP after compatible Android/Apple versions and Web npm package exist. Package availability and provider delivery are separate. Check the platform status in the PushPort console before testing real notifications.
+KMP 0.0.2 and Android 0.0.5 are published on Maven Central; Apple 0.0.2 uses SPM and Web 0.0.2 uses its public GitHub npm archive. For future releases, verify these exact native dependencies and final Apple linking before publishing KMP. Package availability and provider delivery are separate. Check the platform status in the PushPort console before testing real notifications.
 
-Apache-2.0 В· Oleh Yurkov В· support@pushport.dev
+Apache-2.0 · Oleh Yurkov · support@pushport.dev
 
-Source: [PushPortLibraryKmp](https://github.com/IamFromUA/PushPortLibraryKmp) · [Integration documentation](https://pushport.dev/en/docs/)
+Source: [PushPortLibraryKmp](https://github.com/IamFromUA/PushPortLibraryKmp) · [Integration documentation](https://pushport.dev/docs/)
 
 See [diagnostics, consent, images and user profiles](docs/diagnostics.md) for version 0.0.2.

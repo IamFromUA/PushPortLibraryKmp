@@ -1,8 +1,14 @@
-# Version 0.0.2 verification
+# Version 0.0.2 verification — 2026-10-14
 
-The release checks cover state upgrade without duplicate installations, bounded retry/acknowledgement diagnostics, consent, user operations, image policy and native integration. Apple/iOS and KMP/Swift linking must pass macOS CI before tagging/publishing. See the matching GitHub Actions run for the release commit. Portable Swift checks are not native iOS verification. Real provider delivery remains a separate integration check.
+Twelve portable/Android tests, all Android/JVM/JS/iOS device and simulator Maven targets, and final independent Kotlin framework plus Swift app/extension linking passed on macOS with Apple SDK 0.0.2. KMP 0.0.2 is published on Maven Central and uses Android SDK 0.0.5. The Web host installs its native 0.0.2 GitHub npm archive. These checks do not send real notifications.
 
-# Release verification — 2026-09-13
+Evidence: [successful release verification](https://github.com/IamFromUA/PushPortLibraryKmp/actions/runs/38542181151). The run commit matches the immutable public 0.0.2 tag.
+
+## Historical 0.0.1 verification
+
+The following results describe the initial September release, not the current test counts or publication status.
+
+### Release verification — 2026-09-13
 
 - JVM, Android host and Node.js common-behavior checks passed (3 tests per target).
 - All Maven targets were built on macOS: Android, JVM, JS, iOS arm64, iOS simulator arm64 and x64, plus root metadata.
