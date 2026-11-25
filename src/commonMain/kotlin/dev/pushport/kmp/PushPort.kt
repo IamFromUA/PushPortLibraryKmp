@@ -26,6 +26,9 @@ public data class PushPortConfiguration(
     }
 }
 
+@Serializable
+public data class AppProfile(public val id: String = "default", public val name: String = "Основной", public val value: String = "")
+
 /** Credentials and raw platform push tokens are intentionally absent from the shared status. */
 @Serializable
 public data class PushPortStatus(
@@ -38,6 +41,22 @@ public data class PushPortStatus(
     public val lastSyncedAt: Long? = null,
     public val syncError: String? = null,
 )
+
+@Serializable
+public data class AppProfileSnapshot(public val appProfile: AppProfile = AppProfile(), public val profileChecked: Boolean = false)
+
+/** Optional capability for custom drivers, including JVM hosts. */
+public interface AppProfileProvider {
+    public fun profileSnapshot(): AppProfileSnapshot
+    public suspend fun resolveProfile(): AppProfile = kotlinx.coroutines.withTimeoutOrNull(1000L) {
+        var snapshot = profileSnapshot()
+        while (!snapshot.profileChecked) {
+            kotlinx.coroutines.delay(25L)
+            snapshot = profileSnapshot()
+        }
+        snapshot.appProfile
+    } ?: profileSnapshot().appProfile
+}
 
 /** Native adapter boundary. Applications normally use the platform factory functions. */
 public interface PushPortDriver {
@@ -71,6 +90,13 @@ public class PushPort(private val driver: PushPortDriver) {
         }
     }
     public fun status(): PushPortStatus = driver.status()
+    public fun appProfile(): AppProfile = (driver as? AppProfileProvider)?.profileSnapshot()?.appProfile ?: AppProfile()
+
+    /** Use from the platform UI dispatcher after initialize. Network updates continue independently. */
+    public suspend fun resolveAppProfile(): AppProfile {
+        initialized()
+        return (driver as? AppProfileProvider)?.resolveProfile() ?: AppProfile()
+    }
     public fun sync() { initialized(); driver.sync() }
     public suspend fun setSubscribed(value: Boolean) { initialized(); driver.setSubscribed(value) }
     public suspend fun setLocale(languageTag: String?) {

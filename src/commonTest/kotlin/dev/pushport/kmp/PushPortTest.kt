@@ -22,6 +22,17 @@ class PushPortTest {
     }
     private val appId = "6d632180-a023-4101-a4b1-9068404346f8"
 
+    @Test fun applicationProfileIsAvailableFromNewAndOlderNativeBridges() = runTest {
+        val driver = FakeDriver()
+        val sdk = PushPort(driver)
+        sdk.initialize(PushPortConfiguration(appId))
+        assertEquals(AppProfile(), sdk.resolveAppProfile())
+        val selected = BridgeStatus.json.decodeFromString<AppProfileSnapshot>("""{"appProfile":{"id":"shop","name":"Магазин","value":"catalog"},"profileChecked":true}""")
+        driver.select(selected)
+        assertEquals(AppProfile("shop", "Магазин", "catalog"), sdk.resolveAppProfile())
+        assertEquals(0, driver.permissionRequests)
+    }
+
     @Test fun operationsRequireInitializationAndPreserveBinding() = runTest {
         val driver = FakeDriver()
         val sdk = PushPort(driver)
@@ -60,8 +71,11 @@ class PushPortTest {
     }
 }
 
-private class FakeDriver : PushPortDriver {
+private class FakeDriver : PushPortDriver, AppProfileProvider {
     private var state = PushPortStatus()
+    private var profile = AppProfileSnapshot()
+    fun select(value: AppProfileSnapshot) { profile = value }
+    override fun profileSnapshot() = profile
     var permissionRequests = 0
     var syncs = 0
     var operation: String? = null

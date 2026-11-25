@@ -2,10 +2,12 @@
 """Generate an independent iOS app + extension consuming the public Git package.
 
 The fixture links a separately published KMP artifact and the public Swift package.
-It reads local status only and never requests permissions or network access.
+It initializes through Kotlin with required consent and never grants consent or requests permission.
 Use --revision before release; use --version to verify an immutable release tag.
 """
 import argparse
+import json
+import os
 import pathlib
 import re
 
@@ -15,6 +17,7 @@ parser.add_argument('--framework', required=True)
 ref = parser.add_mutually_exclusive_group(required=True)
 ref.add_argument('--revision')
 ref.add_argument('--version')
+ref.add_argument('--local-package', type=pathlib.Path)
 args = parser.parse_args()
 if args.revision and not re.fullmatch(r'[0-9a-f]{40}', args.revision):
     parser.error('Expected a full Git revision')
@@ -24,7 +27,7 @@ root = pathlib.Path(args.output).resolve()
 root.mkdir(parents=True, exist_ok=True)
 project = root / 'Consumer.xcodeproj'
 project.mkdir(exist_ok=True)
-requirement = ('kind = revision; revision = "' + args.revision + '";') if args.revision else ('kind = exactVersion; version = "' + args.version + '";')
+
 
 # Stable IDs keep this generated project reviewable without an Xcode project-generator dependency.
 objects = {}
@@ -69,7 +72,16 @@ for config_id, values in [(43,common),(44,app),(45,extension)]:
     obj(config_id, 'XCBuildConfiguration', f'name = Debug; buildSettings = {{{values}}};')
 for config_id, value in [(40,43),(41,44),(42,45)]:
     obj(config_id, 'XCConfigurationList', f'buildConfigurations = {ids(value)}; defaultConfigurationIsVisible = 0; defaultConfigurationName = Debug;')
-obj(50, 'XCRemoteSwiftPackageReference', f'repositoryURL = "https://github.com/IamFromUA/PushPortLibraryApple.git"; requirement = {{{requirement}}};')
+if args.local_package:
+    source = args.local_package.resolve()
+    if not (source / 'Package.swift').is_file():
+        parser.error('Expected a local Swift package with Package.swift')
+    path = json.dumps(os.path.relpath(source, root), ensure_ascii=False)
+    obj(50, 'XCLocalSwiftPackageReference', f'relativePath = {path};')
+else:
+    requirement = (f'kind = revision; revision = "{args.revision}";' if args.revision else
+                   f'kind = exactVersion; version = "{args.version}";')
+    obj(50, 'XCRemoteSwiftPackageReference', f'repositoryURL = "https://github.com/IamFromUA/PushPortLibraryApple.git"; requirement = {{{requirement}}};')
 obj(51, 'XCSwiftPackageProductDependency', f'package = {ident(50)}; productName = PushPort;')
 obj(52, 'XCSwiftPackageProductDependency', f'package = {ident(50)}; productName = PushPortNotificationService;')
 text = '// !$*UTF8*$!\n{archiveVersion = 1; classes = {}; objectVersion = 56; objects = {\n'
@@ -85,8 +97,29 @@ import ConsumerShared
 struct ConsumerApp: App {
     // Retaining the public Objective-C bridge exercises linking of the KMP-facing API.
     private let bridge = PushPortKMPBridge()
+    private let client = AppleDemoClient()
+    @State private var status = "Starting"
     var body: some Scene {
-        WindowGroup { Text("PushPort " + ConsumerKt.nativeStatus()).accessibilityIdentifier("sdk-version") }
+        WindowGroup {
+            Text(status).accessibilityIdentifier("sdk-status").task {
+                do {
+                    try await client.initialize(appId: "00000000-0000-4000-8000-000000000001",
+                                                serverUrl: "https://pushport.invalid", requireConsent: true)
+                    for _ in 0..<50 {
+                        if client.isConfigured() { break }
+                        try await Task.sleep(nanoseconds: 100_000_000)
+                    }
+                    status = client.isConfigured() && !PushPort.shared.collectionEnabled && client.appProfileId() == "default"
+                        ? "Configured with consent pending" : "Unexpected consent or registration state"
+                } catch { status = "Initialization failed" }
+                let args = ProcessInfo.processInfo.arguments
+                if let index = args.firstIndex(of: "--verify-consent"), index + 1 < args.count,
+                   let run = UUID(uuidString: args[index + 1]) {
+                    let file = FileManager.default.temporaryDirectory.appendingPathComponent(run.uuidString)
+                    try? status.write(to: file, atomically: true, encoding: .utf8)
+                }
+            }
+        }
     }
 }
 ''', encoding='utf-8')

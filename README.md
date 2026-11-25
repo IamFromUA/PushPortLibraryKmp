@@ -1,10 +1,10 @@
 # PushPort Kotlin Multiplatform SDK
 
-Shared Kotlin API over the native PushPort Android, Apple and Web SDKs. **Version 0.0.2 is published on Maven Central.** This package delegates token registration, persistence, permissions and delivery to the platform SDK. It creates no extra installation, HTTP client or competing notification handler.
+Shared Kotlin API over the native PushPort Android, Apple and Web SDKs. **Version 0.1.1 is published on Maven Central.** This package delegates token registration, persistence, permissions and delivery to the platform SDK. It creates no extra installation, HTTP client or competing notification handler.
 
 | Target | Adapter | Requirements |
 | --- | --- | --- |
-| Android | Native `dev.pushport:android-sdk:0.0.5` | Android API 23+, foreground Activity for permission prompts |
+| Android | Native `dev.pushport:android-sdk:0.1.1` | Android API 23+, foreground Activity for permission prompts |
 | iOS device / Apple Silicon and Intel simulator | Objective-C bridge implemented by PushPort Swift package | iOS 15+, macOS/Xcode to build, PushPort SPM product linked in the host |
 | Kotlin/JS browser | Native `@pushport/web-sdk` module | Secure browser context, same-origin service worker |
 | JVM | Common facade / custom driver and portable tests | No native JVM notification delivery |
@@ -17,7 +17,7 @@ Add `mavenCentral()` and `google()` to your repositories and the dependency to t
 
 ```kotlin
 commonMain.dependencies {
-    implementation("dev.pushport:kmp-sdk:0.0.2")
+    implementation("dev.pushport:kmp-sdk:0.1.1")
 }
 ```
 
@@ -61,10 +61,11 @@ val client = createApplePushPort()
 client.initialize(PushPortConfiguration(
     appId = "YOUR_PUSHPORT_APP_ID",
     appleEnvironment = AppleEnvironment.SANDBOX,
+    consentRequired = true, // For apps that require consent before registration.
 ))
 ```
 
-In Xcode link the PushPort **SPM product** to the iOS application, enable Push Notifications, and forward APNs callbacks as described in the Apple SDK README. Explicitly instantiate `PushPortKMPBridge()` once in the Swift host during startup to ensure its Objective-C class is linked before the Kotlin factory is called (see [example](examples/AppleHost.swift)). The common and native initialization must use the same configuration. For images, the extension depends on the Apple extension product directly.
+In Xcode link the PushPort **SPM product**, enable Push Notifications, and forward APNs callbacks from the [Swift host](examples/AppleHost.swift). Keep a `PushPortKMPBridge()` instance in the host to link its Objective-C class. Initialize only through the Kotlin client. It applies the consent settings before registration. Call `client.setConsentGiven(true)` after the user agrees. For images, link the Apple extension product and configure the same App Group in both targets so the extension can read the user's consent.
 
 The checked-in Cinterop header declares stable selectors, not a duplicate native implementation. The KMP KLIB alone cannot contain a Swift package added separately through SPM. Test the final linked application, not only compilation of Kotlin metadata.
 
@@ -77,7 +78,22 @@ external object NativeWebSdk
 val client = createWebPushPort(NativeWebSdk, serviceWorkerUrl = "/pushport-sw.js")
 ```
 
-The Web SDK is currently distributed through its GitHub release archive, not the npm registry. For a Gradle-managed Kotlin/JS host, use `implementation(npm("@pushport/web-sdk", "https://github.com/IamFromUA/PushPortLibraryWeb/releases/download/0.0.2/pushport-web-sdk-0.0.2.tgz"))` in `jsMain.dependencies`, or install that archive in the host JavaScript project. Copy `dist/pushport-sw.js` from the dependency into the site's public directory. After npm registry publication, the dependency may use version `0.0.2` directly. SSR import is safe, but initialize the client only in a supported browser. Request permission from an actual user click.
+The Web SDK is currently distributed through its GitHub release archive, not the npm registry. For a Gradle-managed Kotlin/JS host, use `implementation(npm("@pushport/web-sdk", "https://github.com/IamFromUA/PushPortLibraryWeb/releases/download/0.1.1/pushport-web-sdk-0.1.1.tgz"))` in `jsMain.dependencies`, or install that archive in the host JavaScript project. Copy `dist/pushport-sw.js` from the dependency into the site's public directory. After npm registry publication, the dependency may use version `0.1.1` directly. SSR import is safe, but initialize the client only in a supported browser. Request permission from an actual user click.
+
+## Application profiles
+
+Available in KMP SDK 0.1.1 with Android 0.1.1, Apple 0.1.1 or Web 0.1.1.
+
+An operator must allow profiles for the project's owner in **Users**. The owner or a manager can then enable **App profiles** at project creation or in Settings. Both switches default to off. Each project has up to three named profiles including `default`. IDs survive renames. The optional `value` is public and can identify a screen or a content variant.
+
+```kotlin
+val profile = sdk.resolveAppProfile() // after initialize, on the UI dispatcher
+if (profile.value == "catalog") openCatalog() else openHome()
+```
+
+`sdk.appProfile()` reads the snapshot immediately. Kotlin/JS can use `resolveWebAppProfile(sdkModule, configuration)` before initializing Web Push. Use native SDK builds with app-profile support on each target. A custom JVM driver can implement `AppProfileProvider` to supply the same startup behavior.
+
+The startup check shares the normal configuration request. When the network is slow, the resolver waits up to about one second and uses the last confirmed profile, or `default` on the first offline launch. Turning either switch off selects the default on the next successful check. The app chooses its own screen and can ignore unknown values. Reading the profile needs no notification permission.
 
 ## Development and release
 
@@ -87,18 +103,20 @@ Use the checked-in wrapper, JDK 17, Node.js 24 and Android SDK 36. Portable veri
 ./gradlew jvmTest jsNodeTest
 ```
 
+In SDK 0.1.1, `syncError == "identity_token_required"` means a queued login needs a fresh identity token. Obtain it from your backend for the same installation and External ID, then call login again. Pending profile changes resume in order. Notification statistics continue to sync while login waits. Logging out or logging in with a different External ID discards edits queued for the prior account.
+
 For unreleased Android changes, native adapter verification can use an **explicit** local Maven repository:
 
 ```text
 ./gradlew compileAndroidMain testAndroidHostTest -Ppushport.androidRepository=/absolute/path/to/android-sdk/build/maven-repository
 ```
 
-There is no hardcoded dependency on sibling directories. For iOS run `compileKotlinIosArm64 compileKotlinIosSimulatorArm64 compileKotlinIosX64` on macOS, then run `bash scripts/verify-apple-consumer.sh "$PWD/build/maven-repository"` after local publication to link an independent KMP application with the public Swift package. [Architecture/API](docs/architecture.md), [publishing](docs/publishing.md), [security](SECURITY.md).
+For iOS run `compileKotlinIosArm64 compileKotlinIosSimulatorArm64 compileKotlinIosX64` on macOS, then run `bash scripts/verify-apple-consumer.sh "$PWD/build/maven-repository"` after local publication to link an independent KMP application with the public Swift package. Set `PUSHPORT_KMP_LOCAL_APPLE_PACKAGE` to an Apple SDK checkout to verify unpublished native changes. Set `PUSHPORT_KMP_TEST_SIMULATOR` to a simulator UDID to also launch the app and verify that the Kotlin client initializes with consent pending. [Architecture/API](docs/architecture.md), [publishing](docs/publishing.md), [security](SECURITY.md).
 
-KMP 0.0.2 and Android 0.0.5 are published on Maven Central; Apple 0.0.2 uses SPM and Web 0.0.2 uses its public GitHub npm archive. For future releases, verify these exact native dependencies and final Apple linking before publishing KMP. Package availability and provider delivery are separate. Check the platform status in the PushPort console before testing real notifications.
+KMP 0.1.1 and Android 0.1.1 are published on Maven Central; Apple 0.1.1 uses SPM and Web 0.1.1 uses its public GitHub npm archive. For future releases, verify these exact native dependencies and final Apple linking before publishing KMP. Package availability and provider delivery are separate. Check the platform status in the PushPort console before testing real notifications.
 
 Apache-2.0 · Oleh Yurkov · support@pushport.dev
 
 Source: [PushPortLibraryKmp](https://github.com/IamFromUA/PushPortLibraryKmp) · [Integration documentation](https://pushport.dev/docs/)
 
-See [diagnostics, consent, images and user profiles](docs/diagnostics.md) for version 0.0.2.
+See [diagnostics, consent, images and user profiles](docs/diagnostics.md) for version 0.1.1.

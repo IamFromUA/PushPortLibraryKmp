@@ -10,7 +10,23 @@ import kotlin.js.Promise
 public fun createWebPushPort(sdkModule: dynamic, serviceWorkerUrl: String = "/pushport-sw.js"): PushPort =
     PushPort(WebDriver(sdkModule, serviceWorkerUrl))
 
-private class WebDriver(private val module: dynamic, private val worker: String) : PushPortDriver {
+/** Read startup content on the Web before initializing notification support. */
+public suspend fun resolveWebAppProfile(sdkModule: dynamic, configuration: PushPortConfiguration): AppProfile {
+    configuration.validate()
+    if (jsTypeOf(sdkModule.PushPort.resolveAppProfile) != "function") return AppProfile()
+    val options = js("({})")
+    options.appId = configuration.appId
+    options.serverUrl = configuration.serverUrl
+    configuration.consentRequired?.let { options.consentRequired = it }
+    configuration.consentGiven?.let { options.consentGiven = it }
+    val profile = (sdkModule.PushPort.resolveAppProfile(options) as Promise<dynamic>).await()
+    return BridgeStatus.json.decodeFromString(JSON.stringify(profile))
+}
+
+private class WebDriver(private val module: dynamic, private val worker: String) : PushPortDriver, AppProfileProvider {
+    override fun profileSnapshot(): AppProfileSnapshot =
+        if (client == null) AppProfileSnapshot() else BridgeStatus.json.decodeFromString(JSON.stringify(client.status()))
+
     private var client: dynamic = null
     override suspend fun initialize(configuration: PushPortConfiguration) {
         if (client != null) return

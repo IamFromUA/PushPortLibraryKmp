@@ -14,7 +14,15 @@ import kotlinx.coroutines.withContext
 public fun createAndroidPushPort(context: Context, activity: () -> Activity?): PushPort =
     PushPort(AndroidDriver(context.applicationContext, activity))
 
-private class AndroidDriver(private val context: Context, private val activity: () -> Activity?) : PushPortDriver {
+private class AndroidDriver(private val context: Context, private val activity: () -> Activity?) : PushPortDriver, AppProfileProvider {
+    override fun profileSnapshot(): AppProfileSnapshot = NativePushPort.appProfile(context).let {
+        AppProfileSnapshot(AppProfile(it.id, it.name, it.value))
+    }
+
+    override suspend fun resolveProfile(): AppProfile = NativePushPort.resolveAppProfile(context).let {
+        AppProfile(it.id, it.name, it.value)
+    }
+
     override suspend fun initialize(configuration: PushPortConfiguration) {
         configuration.consentRequired?.let { NativePushPort.setConsentRequired(context, it) }
         configuration.consentGiven?.let { NativePushPort.setConsentGiven(context, it) }

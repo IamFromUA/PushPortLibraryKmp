@@ -7,9 +7,8 @@ import PushPort
     private let pushPortBridgeLink = PushPortKMPBridge()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        do { try PushPort.shared.initialize(appId: "YOUR_PUSHPORT_APP_ID", environment: .sandbox) }
-        catch { assertionFailure(error.localizedDescription) }
-        // Start your KMP app here; initialize its PushPort client with the identical configuration.
+        // Start the shared Kotlin app here. Its createApplePushPort() client owns
+        // initialization and applies the configured consent policy before registration.
         return true
     }
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken token: Data) {

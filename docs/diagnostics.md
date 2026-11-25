@@ -1,4 +1,4 @@
-# Diagnostics and user data — 0.0.2
+# Diagnostics and user data — 0.1.1
 
 Initialize normally. SDK-owned notifications automatically record receipt, presentation API results, image preparation/failures and clicks when the platform exposes them. A provider acceptance is not device delivery; an accepted notification API call is not a human view. No notification text, image URL, raw exception, credential or token is placed in diagnostics. Sessions are foreground visits separated by at least 30 seconds in the background; foreground duration uses a monotonic clock. A session within 60 seconds of a click is direct; one within 1 hour of a receipt without a click is estimated influenced. Registration/deposit/redeposit still come from the partner.
 
@@ -40,4 +40,4 @@ const userId = client.user()?.userId;
 
 ## KMP
 
-Use dev.pushport:kmp-sdk:0.0.2. Android's transitive SDK is 0.0.5. Link the Apple Swift package 0.0.2 in the iOS host, or install @pushport/web-sdk 0.0.2 in a Kotlin/JS host. Configure native permissions/extension/worker once. KMP forwards user/consent APIs; the native SDK automatically collects notification metrics and sessions. JVM has no native delivery driver.
+Use dev.pushport:kmp-sdk:0.1.1. Android's transitive SDK is 0.1.1. Link the Apple Swift package 0.1.1 in the iOS host, or install @pushport/web-sdk 0.1.1 in a Kotlin/JS host. Configure native permissions/extension/worker once. KMP forwards user/consent APIs; the native SDK automatically collects notification metrics and sessions. JVM has no native delivery driver.

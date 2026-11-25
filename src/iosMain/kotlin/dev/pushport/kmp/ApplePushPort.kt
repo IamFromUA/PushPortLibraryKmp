@@ -15,7 +15,12 @@ public fun createApplePushPort(): PushPort {
     return PushPort(AppleDriver(PPPushPortBridge()))
 }
 
-private class AppleDriver(private val bridge: PPPushPortBridge) : PushPortDriver {
+private class AppleDriver(private val bridge: PPPushPortBridge) : PushPortDriver, AppProfileProvider {
+    override fun profileSnapshot(): AppProfileSnapshot {
+        check(NSThread.isMainThread) { "Read the app profile on the main thread" }
+        return BridgeStatus.json.decodeFromString(bridge.statusJSON())
+    }
+
     override suspend fun initialize(configuration: PushPortConfiguration) {
         configuration.consentRequired?.let { setConsentRequired(it) }
         configuration.consentGiven?.let { setConsentGiven(it) }
