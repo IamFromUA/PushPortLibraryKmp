@@ -84,7 +84,7 @@ The Web SDK is currently distributed through its GitHub release archive, not the
 
 Available in KMP SDK 0.1.1 with Android 0.1.1, Apple 0.1.1 or Web 0.1.1.
 
-An operator must allow profiles for the project's owner in **Users**. The owner or a manager can then enable **App profiles** at project creation or in Settings. Both switches default to off. Each project has up to three named profiles including `default`. IDs survive renames. The optional `value` is public and can identify a screen or a content variant.
+All accounts have access to app profiles by default. An operator can change access under **Users**. Profiles start off for each project. The owner or a manager can enable **App profiles** at project creation or in Settings. Each project has up to three named profiles including `default`. IDs survive renames. The optional `value` is public and can identify a screen or a content variant.
 
 ```kotlin
 val profile = sdk.resolveAppProfile() // after initialize, on the UI dispatcher
